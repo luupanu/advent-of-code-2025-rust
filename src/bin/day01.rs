@@ -99,6 +99,8 @@ fn rotate_part2(cmd: RotationCmd, curr_dial: &mut usize, target_dial_count: &mut
             *curr_dial = (*curr_dial + DIAL_LENGTH - (cmd.amount % DIAL_LENGTH)) % DIAL_LENGTH;
 
             // Check if we cross or end at 0 in the remaining rotation (after removing "full" rotations)
+            // This is asymmetric with Direction::Right – meaning that it can't be calculated with `(start_dial - cmd.amount) / DIAL_LENGTH`
+            // since division does not count the first zero crossing from positive numbers to negative numbers.
             let remainder_rotation = cmd.amount % DIAL_LENGTH;
             let remainder_rotation_crosses = if remainder_rotation >= start_dial && start_dial > 0 { 1 } else { 0 };
 
