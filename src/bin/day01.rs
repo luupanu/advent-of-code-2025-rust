@@ -19,7 +19,8 @@ fn solve_part1(lines: &Vec<String>) -> Result<String> {
     let mut target_dial_count: usize = 0;
 
     for line in lines {
-        rotate_part1(line, &mut curr_dial)?;
+        let cmd = parse_rotation_cmd(line)?;
+        rotate_part1(cmd, &mut curr_dial);
         if curr_dial == DIAL_TARGET {
             target_dial_count += 1;
         }
@@ -33,74 +34,78 @@ fn solve_part2(lines: &Vec<String>) -> Result<String> {
     let mut target_dial_count: usize = 0;
 
     for line in lines {
-        rotate_part2(line, &mut curr_dial, &mut target_dial_count)?;
+        let cmd = parse_rotation_cmd(line)?;
+        rotate_part2(cmd, &mut curr_dial, &mut target_dial_count);
     }
 
     Ok(target_dial_count.to_string())
 }
 
+enum Direction {
+    Right,
+    Left,
+}
 
-fn rotate_part1(line: &str, curr_dial: &mut usize) -> Result<()> {
-    let direction = line.chars().nth(0)
+struct RotationCmd {
+    direction: Direction,
+    amount: usize,
+}
+
+fn parse_rotation_cmd(line: &str) -> Result<RotationCmd> {
+    let direction_char = line.chars().nth(0)
         .with_context(|| format!("Should have direction in line: {}", line))?;
-    let rotation = line
+    let direction = match direction_char {
+        'R' => Direction::Right,
+        'L' => Direction::Left,
+        _ => {
+            bail!("Unknown direction '{}' in line: {}", direction_char, line);
+        }
+    };
+    let amount = line
         .get(1..)
-        .with_context(|| format!("Should have rotation in line: {}", line))?
+        .with_context(|| format!("Should have rotation amount in line: {}", line))?
         .parse::<usize>()
         .with_context(|| format!("Should be able to parse number in line: {}", line))?;
 
-    match direction {
-        'R' => {
-            *curr_dial = (*curr_dial + rotation) % DIAL_LENGTH;
+    Ok(RotationCmd{ direction, amount })
+}
+
+fn rotate_part1(cmd: RotationCmd, curr_dial: &mut usize) {
+    match cmd.direction {
+        Direction::Right => {
+            *curr_dial = (*curr_dial + cmd.amount) % DIAL_LENGTH;
         }
-        'L' => {
+        Direction::Left => {
             // Add DIAL_LENGTH before subtracting and do mod DIAL_LENGTH to ensure the result is positive
-            *curr_dial = (*curr_dial + DIAL_LENGTH - rotation % DIAL_LENGTH) % DIAL_LENGTH;
-        }
-        _ => {
-            bail!("Unknown direction '{}' in line: {}", direction, line);
+            *curr_dial = (*curr_dial + DIAL_LENGTH - cmd.amount % DIAL_LENGTH) % DIAL_LENGTH;
         }
     }
-
-    Ok(())
 }
 
 /// Note: the target_dial_count calculation here would NOT work when `DIAL_TARGET != 0`
-fn rotate_part2(line: &str, curr_dial: &mut usize, target_dial_count: &mut usize) -> Result<()> {
-    let direction = line.chars().nth(0)
-        .with_context(|| format!("Should have direction in line: {}", line))?;
-    let rotation = line
-        .get(1..)
-        .with_context(|| format!("Should have rotation in line: {}", line))?
-        .parse::<usize>()
-        .with_context(|| format!("Should be able to parse number in line: {}", line))?;
+fn rotate_part2(cmd: RotationCmd, curr_dial: &mut usize, target_dial_count: &mut usize) {
     let start_dial = *curr_dial;
 
-    match direction {
-        'R' => {
-            *curr_dial = (*curr_dial + rotation) % DIAL_LENGTH;
+    match cmd.direction {
+        Direction::Right => {
+            *curr_dial = (*curr_dial + cmd.amount) % DIAL_LENGTH;
 
             // Count how many times we pass through 0
-            let total_crosses = (start_dial + rotation) / DIAL_LENGTH;
+            let total_crosses = (start_dial + cmd.amount) / DIAL_LENGTH;
             *target_dial_count += total_crosses;
         }
-        'L' => {
+        Direction::Left => {
             // Add DIAL_LENGTH before subtracting and do mod DIAL_LENGTH to ensure the result is positive
-            *curr_dial = (*curr_dial + DIAL_LENGTH - (rotation % DIAL_LENGTH)) % DIAL_LENGTH;
+            *curr_dial = (*curr_dial + DIAL_LENGTH - (cmd.amount % DIAL_LENGTH)) % DIAL_LENGTH;
 
             // Check if we cross or end at 0 in the remaining rotation (after removing "full" rotations)
-            let remainder_rotation = rotation % DIAL_LENGTH;
+            let remainder_rotation = cmd.amount % DIAL_LENGTH;
             let remainder_rotation_crosses = if remainder_rotation >= start_dial && start_dial > 0 { 1 } else { 0 };
 
             let full_rotation_crosses = cmd.amount / DIAL_LENGTH;
             *target_dial_count += remainder_rotation_crosses + full_rotation_crosses;
         }
-        _ => {
-            bail!("Unknown direction '{}' in line: {}", direction, line);
-        }
     }
-
-    Ok(())
 }
 
 #[cfg(test)]
@@ -110,28 +115,32 @@ mod tests {
     #[test]
     fn test_rotate_part1_right() {
         let mut curr_dial: usize = 20;
-        rotate_part1("R20", &mut curr_dial).unwrap();
+        let cmd = RotationCmd { direction: Direction::Right, amount: 20 };
+        rotate_part1(cmd, &mut curr_dial);
         assert_eq!(curr_dial, 40);
     }
 
     #[test]
     fn test_rotate_part1_left() {
         let mut curr_dial: usize = 20;
-        rotate_part1("L10", &mut curr_dial).unwrap();
+        let cmd = RotationCmd { direction: Direction::Left, amount: 10 };
+        rotate_part1(cmd, &mut curr_dial);
         assert_eq!(curr_dial, 10);
     }
 
     #[test]
     fn test_rotate_part1_right_wrap() {
         let mut curr_dial: usize = 20;
-        rotate_part1("R80", &mut curr_dial).unwrap();
+        let cmd = RotationCmd { direction: Direction::Right, amount: 80 };
+        rotate_part1(cmd, &mut curr_dial);
         assert_eq!(curr_dial, 0);
     }
 
     #[test]
     fn test_rotate_part1_left_wrap() {
         let mut curr_dial: usize = 5;
-        rotate_part1("L10", &mut curr_dial).unwrap();
+        let cmd = RotationCmd { direction: Direction::Left, amount: 10 };
+        rotate_part1(cmd, &mut curr_dial);
         assert_eq!(curr_dial, 95);
     }
 
@@ -156,7 +165,8 @@ mod tests {
     fn test_rotate_part2_right() {
         let mut curr_dial: usize = 20;
         let mut target_dial_count: usize = 0;
-        rotate_part2("R20", &mut curr_dial, &mut target_dial_count).unwrap();
+        let cmd = RotationCmd { direction: Direction::Right, amount: 20 };
+        rotate_part2(cmd, &mut curr_dial, &mut target_dial_count);
         assert_eq!(curr_dial, 40);
     }
 
@@ -164,7 +174,8 @@ mod tests {
     fn test_rotate_part2_left() {
         let mut curr_dial: usize = 20;
         let mut target_dial_count: usize = 0;
-        rotate_part2("L10", &mut curr_dial, &mut target_dial_count).unwrap();
+        let cmd = RotationCmd { direction: Direction::Left, amount: 10 };
+        rotate_part2(cmd, &mut curr_dial, &mut target_dial_count);
         assert_eq!(curr_dial, 10);
     }
 
@@ -172,7 +183,8 @@ mod tests {
     fn test_rotate_part2_right_wrap() {
         let mut curr_dial: usize = 75;
         let mut target_dial_count: usize = 0;
-        rotate_part2("R125", &mut curr_dial, &mut target_dial_count).unwrap();
+        let cmd = RotationCmd { direction: Direction::Right, amount: 125 };
+        rotate_part2(cmd, &mut curr_dial, &mut target_dial_count);
         assert_eq!(curr_dial, 0);
         assert_eq!(target_dial_count, 2);
     }
@@ -181,7 +193,8 @@ mod tests {
     fn test_rotate_part2_left_wrap() {
         let mut curr_dial: usize = 75;
         let mut target_dial_count: usize = 0;
-        rotate_part2("L125", &mut curr_dial, &mut target_dial_count).unwrap();
+        let cmd = RotationCmd { direction: Direction::Left, amount: 125 };
+        rotate_part2(cmd, &mut curr_dial, &mut target_dial_count);
         assert_eq!(curr_dial, 50);
         assert_eq!(target_dial_count, 1);
     }
@@ -190,7 +203,8 @@ mod tests {
     fn test_rotate_part2_right_ends_at_zero() {
         let mut curr_dial: usize = 52;
         let mut target_dial_count: usize = 0;
-        rotate_part2("R48", &mut curr_dial, &mut target_dial_count).unwrap();
+        let cmd = RotationCmd { direction: Direction::Right, amount: 48 };
+        rotate_part2(cmd, &mut curr_dial, &mut target_dial_count);
         assert_eq!(curr_dial, 0);
         assert_eq!(target_dial_count, 1);
     }
@@ -199,7 +213,8 @@ mod tests {
     fn test_rotate_part2_left_ends_at_zero() {
         let mut curr_dial: usize = 55;
         let mut target_dial_count: usize = 0;
-        rotate_part2("L55", &mut curr_dial, &mut target_dial_count).unwrap();
+        let cmd = RotationCmd { direction: Direction::Left, amount: 55 };
+        rotate_part2(cmd, &mut curr_dial, &mut target_dial_count);
         assert_eq!(curr_dial, 0);
         assert_eq!(target_dial_count, 1);
     }
@@ -208,7 +223,8 @@ mod tests {
     fn test_rotate_part2_right_starts_at_zero() {
         let mut curr_dial: usize = 0;
         let mut target_dial_count: usize = 0;
-        rotate_part2("R14", &mut curr_dial, &mut target_dial_count).unwrap();
+        let cmd = RotationCmd { direction: Direction::Right, amount: 14 };
+        rotate_part2(cmd, &mut curr_dial, &mut target_dial_count);
         assert_eq!(curr_dial, 14);
         assert_eq!(target_dial_count, 0);
     }
@@ -217,7 +233,8 @@ mod tests {
     fn test_rotate_part2_left_starts_at_zero() {
         let mut curr_dial: usize = 0;
         let mut target_dial_count: usize = 0;
-        rotate_part2("L5", &mut curr_dial, &mut target_dial_count).unwrap();
+        let cmd = RotationCmd { direction: Direction::Left, amount: 5 };
+        rotate_part2(cmd, &mut curr_dial, &mut target_dial_count);
         assert_eq!(curr_dial, 95);
         assert_eq!(target_dial_count, 0);
     }
