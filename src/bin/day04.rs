@@ -1,11 +1,9 @@
-use advent_of_code_2025::{read_input_lines};
-use anyhow::{Result};
+use advent_of_code_2025::read_input_lines;
+use anyhow::Result;
 
 fn main() -> Result<()> {
     let lines = read_input_lines(4)?;
-    let grid: Vec<Vec<char>> = lines.iter()
-        .map(|line| line.chars().collect())
-        .collect();
+    let grid: Vec<Vec<char>> = lines.iter().map(|line| line.chars().collect()).collect();
 
     println!("Part 1: {}", solve_part1(&grid)?);
     println!("Part 2: {}", solve_part2(&mut grid.clone())?);
@@ -13,7 +11,16 @@ fn main() -> Result<()> {
     Ok(())
 }
 
-const NEIGHBOURING_OFFSETS: [(isize, isize);8] = [(-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1)];
+const NEIGHBOURING_OFFSETS: [(isize, isize); 8] = [
+    (-1, -1),
+    (-1, 0),
+    (-1, 1),
+    (0, -1),
+    (0, 1),
+    (1, -1),
+    (1, 0),
+    (1, 1),
+];
 
 fn solve_part1(grid: &Vec<Vec<char>>) -> Result<String> {
     let mut sum: usize = 0;
@@ -88,9 +95,7 @@ mod tests {
             ".@@@@@@@@.".to_string(),
             "@.@.@@@.@.".to_string(),
         ];
-        let grid: Vec<Vec<char>> = lines.iter()
-            .map(|line| line.chars().collect())
-            .collect();
+        let grid: Vec<Vec<char>> = lines.iter().map(|line| line.chars().collect()).collect();
 
         assert_eq!(solve_part1(&grid).unwrap(), "13");
     }
@@ -109,9 +114,7 @@ mod tests {
             ".@@@@@@@@.".to_string(),
             "@.@.@@@.@.".to_string(),
         ];
-        let mut grid: Vec<Vec<char>> = lines.iter()
-            .map(|line| line.chars().collect())
-            .collect();
+        let mut grid: Vec<Vec<char>> = lines.iter().map(|line| line.chars().collect()).collect();
 
         assert_eq!(solve_part2(&mut grid).unwrap(), "43");
     }

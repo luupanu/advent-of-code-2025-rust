@@ -1,5 +1,5 @@
-use advent_of_code_2025::{read_input_lines};
-use anyhow::{Result};
+use advent_of_code_2025::read_input_lines;
+use anyhow::Result;
 
 fn main() -> Result<()> {
     let lines = read_input_lines(3)?;

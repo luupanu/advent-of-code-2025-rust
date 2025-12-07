@@ -1,5 +1,5 @@
 use advent_of_code_2025::read_input;
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 
 fn main() -> Result<()> {
     let input = read_input(2)?;
@@ -43,7 +43,8 @@ fn solve_part2(input: &str) -> Result<String> {
 }
 
 fn parse_range(range: &str) -> Result<(u64, u64)> {
-    let (start_str, end_str) = range.split_once('-')
+    let (start_str, end_str) = range
+        .split_once('-')
         .ok_or_else(|| anyhow!("should have split once"))?;
     Ok((start_str.parse()?, end_str.parse()?))
 }
@@ -52,7 +53,7 @@ fn is_repeated_twice(input: &str) -> bool {
     // Skip checking inputs with odd length.
     // They cannot be made of only some sequence of digits repeated twice.
     if input.len() % 2 == 1 {
-        return false
+        return false;
     }
     let len_half = input.len() / 2;
     return &input[0..len_half] == &input[len_half..];
@@ -60,7 +61,7 @@ fn is_repeated_twice(input: &str) -> bool {
 
 fn has_repeated_sequence(input: &str) -> bool {
     let concatted = format!("{}{}", input, input);
-    let search_slice = &concatted[1..&concatted.len()-1];
+    let search_slice = &concatted[1..&concatted.len() - 1];
 
     search_slice.find(input).is_some()
 }

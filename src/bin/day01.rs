@@ -49,7 +49,9 @@ struct RotationCmd {
 }
 
 fn parse_rotation_cmd(line: &str) -> Result<RotationCmd> {
-    let direction_char = line.chars().nth(0)
+    let direction_char = line
+        .chars()
+        .nth(0)
         .with_context(|| format!("Should have direction in line: {}", line))?;
     let direction = match direction_char {
         'R' => Direction::Right,
@@ -64,7 +66,7 @@ fn parse_rotation_cmd(line: &str) -> Result<RotationCmd> {
         .parse::<usize>()
         .with_context(|| format!("Should be able to parse number in line: {}", line))?;
 
-    Ok(RotationCmd{ direction, amount })
+    Ok(RotationCmd { direction, amount })
 }
 
 fn rotate_part1(cmd: RotationCmd, curr_dial: &mut usize, target_dial_count: &mut usize) {
@@ -102,7 +104,11 @@ fn rotate_part2(cmd: RotationCmd, curr_dial: &mut usize, target_dial_count: &mut
             // This is asymmetric with Direction::Right – meaning that it can't be calculated with `(start_dial - cmd.amount) / DIAL_LENGTH`
             // since division does not count the first zero crossing from positive numbers to negative numbers.
             let remainder_rotation = cmd.amount % DIAL_LENGTH;
-            let remainder_rotation_crosses = if remainder_rotation >= start_dial && start_dial > 0 { 1 } else { 0 };
+            let remainder_rotation_crosses = if remainder_rotation >= start_dial && start_dial > 0 {
+                1
+            } else {
+                0
+            };
 
             let full_rotation_crosses = cmd.amount / DIAL_LENGTH;
             *target_dial_count += remainder_rotation_crosses + full_rotation_crosses;
@@ -118,7 +124,10 @@ mod tests {
     fn test_rotate_part1_right() {
         let mut curr_dial: usize = 20;
         let mut target_dial_count: usize = 0;
-        let cmd = RotationCmd { direction: Direction::Right, amount: 20 };
+        let cmd = RotationCmd {
+            direction: Direction::Right,
+            amount: 20,
+        };
 
         rotate_part1(cmd, &mut curr_dial, &mut target_dial_count);
 
@@ -130,7 +139,10 @@ mod tests {
     fn test_rotate_part1_left() {
         let mut curr_dial: usize = 20;
         let mut target_dial_count: usize = 0;
-        let cmd = RotationCmd { direction: Direction::Left, amount: 10 };
+        let cmd = RotationCmd {
+            direction: Direction::Left,
+            amount: 10,
+        };
 
         rotate_part1(cmd, &mut curr_dial, &mut target_dial_count);
 
@@ -142,7 +154,10 @@ mod tests {
     fn test_rotate_part1_right_wrap() {
         let mut curr_dial: usize = 20;
         let mut target_dial_count: usize = 0;
-        let cmd = RotationCmd { direction: Direction::Right, amount: 80 };
+        let cmd = RotationCmd {
+            direction: Direction::Right,
+            amount: 80,
+        };
 
         rotate_part1(cmd, &mut curr_dial, &mut target_dial_count);
 
@@ -154,7 +169,10 @@ mod tests {
     fn test_rotate_part1_left_wrap() {
         let mut curr_dial: usize = 5;
         let mut target_dial_count: usize = 0;
-        let cmd = RotationCmd { direction: Direction::Left, amount: 10 };
+        let cmd = RotationCmd {
+            direction: Direction::Left,
+            amount: 10,
+        };
 
         rotate_part1(cmd, &mut curr_dial, &mut target_dial_count);
 
@@ -183,7 +201,10 @@ mod tests {
     fn test_rotate_part2_right() {
         let mut curr_dial: usize = 20;
         let mut target_dial_count: usize = 0;
-        let cmd = RotationCmd { direction: Direction::Right, amount: 20 };
+        let cmd = RotationCmd {
+            direction: Direction::Right,
+            amount: 20,
+        };
 
         rotate_part2(cmd, &mut curr_dial, &mut target_dial_count);
 
@@ -194,7 +215,10 @@ mod tests {
     fn test_rotate_part2_left() {
         let mut curr_dial: usize = 20;
         let mut target_dial_count: usize = 0;
-        let cmd = RotationCmd { direction: Direction::Left, amount: 10 };
+        let cmd = RotationCmd {
+            direction: Direction::Left,
+            amount: 10,
+        };
 
         rotate_part2(cmd, &mut curr_dial, &mut target_dial_count);
 
@@ -205,7 +229,10 @@ mod tests {
     fn test_rotate_part2_right_wrap() {
         let mut curr_dial: usize = 75;
         let mut target_dial_count: usize = 0;
-        let cmd = RotationCmd { direction: Direction::Right, amount: 125 };
+        let cmd = RotationCmd {
+            direction: Direction::Right,
+            amount: 125,
+        };
 
         rotate_part2(cmd, &mut curr_dial, &mut target_dial_count);
 
@@ -217,7 +244,10 @@ mod tests {
     fn test_rotate_part2_left_wrap() {
         let mut curr_dial: usize = 75;
         let mut target_dial_count: usize = 0;
-        let cmd = RotationCmd { direction: Direction::Left, amount: 125 };
+        let cmd = RotationCmd {
+            direction: Direction::Left,
+            amount: 125,
+        };
 
         rotate_part2(cmd, &mut curr_dial, &mut target_dial_count);
 
@@ -229,7 +259,10 @@ mod tests {
     fn test_rotate_part2_right_ends_at_zero() {
         let mut curr_dial: usize = 52;
         let mut target_dial_count: usize = 0;
-        let cmd = RotationCmd { direction: Direction::Right, amount: 48 };
+        let cmd = RotationCmd {
+            direction: Direction::Right,
+            amount: 48,
+        };
 
         rotate_part2(cmd, &mut curr_dial, &mut target_dial_count);
 
@@ -241,7 +274,10 @@ mod tests {
     fn test_rotate_part2_left_ends_at_zero() {
         let mut curr_dial: usize = 55;
         let mut target_dial_count: usize = 0;
-        let cmd = RotationCmd { direction: Direction::Left, amount: 55 };
+        let cmd = RotationCmd {
+            direction: Direction::Left,
+            amount: 55,
+        };
 
         rotate_part2(cmd, &mut curr_dial, &mut target_dial_count);
 
@@ -253,7 +289,10 @@ mod tests {
     fn test_rotate_part2_right_starts_at_zero() {
         let mut curr_dial: usize = 0;
         let mut target_dial_count: usize = 0;
-        let cmd = RotationCmd { direction: Direction::Right, amount: 14 };
+        let cmd = RotationCmd {
+            direction: Direction::Right,
+            amount: 14,
+        };
 
         rotate_part2(cmd, &mut curr_dial, &mut target_dial_count);
 
@@ -265,7 +304,10 @@ mod tests {
     fn test_rotate_part2_left_starts_at_zero() {
         let mut curr_dial: usize = 0;
         let mut target_dial_count: usize = 0;
-        let cmd = RotationCmd { direction: Direction::Left, amount: 5 };
+        let cmd = RotationCmd {
+            direction: Direction::Left,
+            amount: 5,
+        };
 
         rotate_part2(cmd, &mut curr_dial, &mut target_dial_count);
 
